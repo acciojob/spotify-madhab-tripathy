@@ -253,10 +253,26 @@ public class SpotifyRepository {
 
     }
     public String mostPopularArtist() {
-        return "";
+        int like = -1;
+        String popularArtist = "";
+        for (Artist artist: artists){
+            if(like < artist.getLikes()){
+                like = artist.getLikes();
+                popularArtist = artist.getName();
+            }
+        }
+        return popularArtist;
     }
     public String mostPopularSong() {
-        return "";
+        int like = -1;
+        String popularSong = "";
+        for (Song song: songs){
+            if(like < song.getLikes()){
+                like = song.getLikes();
+                popularSong = song.getTitle();
+            }
+        }
+        return popularSong;
     }
     public void updateArtistLike(Song likedSong){
         int like = -1;
