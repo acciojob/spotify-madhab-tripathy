@@ -184,34 +184,65 @@ public class SpotifyRepository {
         return playlist;
     }
     public Playlist findPlaylist(String mobile, String playlistTitle) throws Exception {
+        User user = null;
+        for(User currUser : users){
+            if(currUser.getMobile().equals(mobile))user = currUser;
+        }
+        // user does not exist
+        if(user == null)throw new Exception("User does not exist");
+
         Playlist playlist = null;
-        boolean isUserExist = false;
-        boolean isPlayListExist = false;
-        for(User user : users){
-            String number = user.getMobile();
-            if(number.equals(mobile)){
-                for(Playlist playlistObj : playlists){
-                    String name = playlistObj.getTitle();
-                    if(name.equals(playlistTitle)){
-                        playlist = playlistObj;
-                        if(playlistListenerMap.containsKey(playlistObj)){
-                            List<User> userList = playlistListenerMap.get(playlistObj);
-                            if(!userList.contains(user)){ //If the user is not creator or not a listener, do nothing
-                                userList.add(user);
-                                playlistListenerMap.put(playlist,userList); //update playlist listener map
-                            }
-                        }
-                        isPlayListExist = true;
-                    }
-                }
-                isUserExist = true;
+        for(Playlist currPlaylist: playlists){
+            if(currPlaylist.getTitle().equals(playlistTitle))playlist = currPlaylist;
+        }
+        // playlist does not exist
+        if(playlist == null)throw new Exception("Playlist does not exist");
+
+        // if user is creator of playlist do nothing and return playlist
+        if(creatorPlaylistMap.containsKey(user)){
+            if(creatorPlaylistMap.get(user).getTitle().equals(playlistTitle))return playlist;
+        }
+        // if user is already present in listener list do nothing and return playlist
+        List<User> listenerList = new ArrayList<>();
+        if(playlistListenerMap.containsKey(playlist)){
+            listenerList = playlistListenerMap.get(playlist);
+            for(User user1 : listenerList){
+                if(user1.getMobile().equals(mobile)) return playlist;
             }
         }
-        if(!isUserExist){ //If the user does not exist, throw "User does not exist" exception
-            throw new Exception("User does not exist");
-        } else if (!isPlayListExist) { //If the playlist does not exist, throw "Playlist does not exist" exception
-            throw new Exception("Playlist does not exist");
-        }
+        // update listener map
+        listenerList.add(user);
+        playlistListenerMap.put(playlist,listenerList);
+
+//        Playlist playlist = null;
+//        boolean isUserExist = false;
+//        boolean isPlayListExist = false;
+//        for(User user : users){
+//            String number = user.getMobile();
+//            if(number.equals(mobile)){
+//                for(Playlist playlistObj : playlists){
+//                    String name = playlistObj.getTitle();
+//                    if(name.equals(playlistTitle)){
+//                        playlist = playlistObj;
+//
+//                        if(playlistListenerMap.containsKey(playlistObj)){
+//                            List<User> userList = playlistListenerMap.get(playlistObj);
+//                            if(!userList.contains(user)){ //If the user is not creator or not a listener, do nothing
+//                                userList.add(user);
+//                                playlistListenerMap.put(playlist,userList); //update playlist listener map
+//                            }
+//                        }
+//                        isPlayListExist = true;
+//                    }
+//                }
+//                isUserExist = true;
+//            }
+//        }
+//        if(!isUserExist){ //If the user does not exist, throw "User does not exist" exception
+//            throw new Exception("User does not exist");
+//        } else if (!isPlayListExist) { //If the playlist does not exist, throw "Playlist does not exist" exception
+//            throw new Exception("Playlist does not exist");
+//        }
         return playlist;
     }
     public Song likeSong(String mobile, String songTitle) throws Exception {
