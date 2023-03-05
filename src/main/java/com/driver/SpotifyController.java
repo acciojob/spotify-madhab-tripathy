@@ -92,7 +92,7 @@ public class SpotifyController {
         //If the song does not exist, throw "Song does not exist" exception
         //Return the song after updating
         try {
-            Song sing = new Song();
+            spotifyService.likeSong(mobile,songTitle);
         }catch (Exception e){
             throw new Exception();
         }

@@ -183,7 +183,6 @@ public class SpotifyRepository {
         }
         return playlist;
     }
-
     public Playlist findPlaylist(String mobile, String playlistTitle) throws Exception {
         Playlist playlist = null;
         boolean isUserExist = false;
@@ -202,7 +201,6 @@ public class SpotifyRepository {
                                 playlistListenerMap.put(playlist,userList); //update playlist listener map
                             }
                         }
-
                         isPlayListExist = true;
                     }
                 }
@@ -216,16 +214,68 @@ public class SpotifyRepository {
         }
         return playlist;
     }
-
     public Song likeSong(String mobile, String songTitle) throws Exception {
-        return  new Song();
-    }
+        //The user likes the given song. The corresponding artist of the song gets auto-liked
+        //A song can be liked by a user only once. If a user tried to like a song multiple times, do nothing
+        //However, an artist can indirectly have multiple likes from a user, if the user has liked multiple songs of that artist.
+        //If the user does not exist, throw "User does not exist" exception
+        //If the song does not exist, throw "Song does not exist" exception
+        //Return the song after updating
+        User user = null;
+        for(User currUser : users){
+            if(currUser.getMobile().equals(mobile))user = currUser;
+        }
+        // user does not exist
+        if(user == null)throw new Exception("User does not exist");
 
+        Song song = null;
+        for(Song currSong: songs){
+            if(currSong.getTitle().equals(songTitle))song = currSong;
+        }
+        // playlist does not exist
+        if(song == null)throw new Exception("Song does not exist");
+        // if user has already liked song
+        List<User> songLikeUser = new ArrayList<>();
+        if(songLikeMap.containsKey(song)) songLikeUser = songLikeMap.get(song);
+        for(User userLike : songLikeUser){
+            if(userLike.getMobile().equals(mobile)) return song;
+        }
+
+        // update song like
+        song.setLikes(song.getLikes()+1);
+        songLikeUser.add(user);
+        songLikeMap.put(song,songLikeUser);
+
+        // update like of artist
+        updateArtistLike(song);
+
+        return song;
+
+    }
     public String mostPopularArtist() {
         return "";
     }
-
     public String mostPopularSong() {
         return "";
+    }
+    public void updateArtistLike(Song likedSong){
+        int like = -1;
+        String popularArtist = "";
+        for(Artist artist: artists){
+            if(artistAlbumMap.containsKey(artist)){
+                List<Album> albumList= artistAlbumMap.get(artist);
+                for (Album album : albumList){
+                    if(albumSongMap.containsKey(album)){
+                        List<Song> songList = albumSongMap.get(album);
+                        for (Song song : songList){
+                            if(song.equals(likedSong)){
+                                artist.setLikes(artist.getLikes()+1);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
